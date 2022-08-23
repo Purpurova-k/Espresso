@@ -15,11 +15,14 @@ import static org.hamcrest.core.AllOf.allOf;
 
 import android.content.Intent;
 
+import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +32,16 @@ public class AppTest {
     @Rule
     public ActivityTestRule<MainActivity> activityTestRule =
             new ActivityTestRule<>(MainActivity.class);
+
+    @Before
+    public void registerIdlingResources() {
+        IdlingRegistry.getInstance().register(EspressoIdlingResources.idlingResource);
+    }
+
+    @After
+    public void unregisterIdlingResources() {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResources.idlingResource);
+    }
 
     @Test
     public void checkMainText() {
@@ -58,5 +71,20 @@ public class AppTest {
                 hasAction(Intent.ACTION_VIEW)
         ));
         Intents.release();
+    }
+
+
+    @Test
+    public void checkGalleryListItem() {
+        ViewInteraction menuButton = onView(withContentDescription("Open navigation drawer"));
+        menuButton.check(matches(isDisplayed()));
+        menuButton.perform(click());
+
+        ViewInteraction gallery = onView(withId(R.id.nav_gallery));
+        gallery.check(matches(isDisplayed()));
+        gallery.perform(click());
+
+        ViewInteraction galleryItem = onView(allOf(withId(R.id.item_number), withText("6")));
+        galleryItem.check(matches(isDisplayed()));
     }
 }
